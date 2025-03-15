@@ -1,16 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>March Madness Bracket</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        h1 { color: #2c3e50; }
-    </style>
-</head>
-<body>
-    <h1>Welcome to the March Madness Bracket Challenge!</h1>
-    <p>The tournament is coming soon. Stay tuned for updates!</p>
-</body>
-</html>
+document.getElementById("picks-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const name = document.getElementById("name").value;
+    const round = document.getElementById("round").value;
+    const winner = document.getElementById("winner").value;
+
+    try {
+        await addDoc(collection(db, "picks"), {
+            name: name,
+            round: round,
+            winner: winner,
+            timestamp: new Date()  // 🔥 Auto-generates timestamp
+        });
+
+        document.getElementById("confirmation").innerText = "Picks submitted successfully!";
+    } catch (error) {
+        console.error("Error submitting picks: ", error);
+    }
+});
+

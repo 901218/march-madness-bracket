@@ -84,41 +84,68 @@
     </table>
 
     <script type="module">
-        import { db, collection, getDocs } from "./firebase.js";
+    import { db, collection, getDocs } from "./firebase.js";
 
-        async function loadLeaderboard() {
-            const querySnapshot = await getDocs(collection(db, "picks"));
-            const tbody = document.getElementById("leaderboard-body");
+    async function loadLeaderboard() {
+        const picksSnapshot = await getDocs(collection(db, "picks"));
+        const resultsSnapshot = await getDocs(collection(db, "results"));
+        const tbody = document.getElementById("leaderboard-body");
 
-            // Convert round codes to readable names
-            const roundNames = {
-                "round64": "Round of 64",
-                "round32": "Round of 32",
-                "sweet16": "Sweet 16",
-                "elite8": "Elite 8",
-                "final4": "Final Four",
-                "championship": "Championship"
-            };
+        // Store actual game results
+        let results = {};
+        resultsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            results[data.round] = results[data.round] || {};
+            results[data.round][data.game] = data.winner;
+        });
 
-            // Loop through Firestore data and add rows to the table
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const row = document.createElement("tr");
+        // Scoring system
+        const scoring = {
+            "round64": 1,
+            "round32": 2,
+            "sweet16": 4,
+            "elite8": 8,
+            "final4": 16,
+            "championship": 32
+        };
 
-                row.innerHTML = `
-                    <td>${data.name}</td>
-                    <td>${roundNames[data.round] || data.round}</td>
-                    <td>${data.winner}</td>
-                    <td>${data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "N/A"}</td>
-                `;
+        let leaderboard = {};
 
-                tbody.appendChild(row);
-            });
-        }
+        picksSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const player = data.name;
+            const round = data.round;
+            const pickedWinner = data.winner;
+            const game = data.game || "Game 1"; // Default to "Game 1" if not specified
 
-        // Load leaderboard data on page load
-        loadLeaderboard();
-    </script>
+            if (!leaderboard[player]) {
+                leaderboard[player] = { name: player, score: 0 };
+            }
+
+            // Check if the pick matches the real result
+            if (results[round] && results[round][game] === pickedWinner) {
+                leaderboard[player].score += scoring[round] || 0;
+            }
+        });
+
+        // Convert leaderboard object into sorted array
+        let sortedLeaderboard = Object.values(leaderboard).sort((a, b) => b.score - a.score);
+
+        sortedLeaderboard.forEach((entry) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${entry.name}</td>
+                <td>${entry.score} pts</td>
+            `;
+
+            tbody.appendChild(row);
+        });
+    }
+
+    loadLeaderboard();
+</script>
+
 
 </body>
 </html>

@@ -1,25 +1,60 @@
 <!DOCTYPE html>
-<script type="module">
-    import { db, collection, addDoc } from "./firebase.js";
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>March Madness Bracket</title>
+</head>
+<body>
 
-    document.getElementById("picks-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const name = document.getElementById("name").value;
-        const round = document.getElementById("round").value;
-        const winner = document.getElementById("winner").value;
+    <h2>Submit Your Picks</h2>
+    <form id="picks-form">
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" required>
 
-        try {
-            await addDoc(collection(db, "picks"), {
-                name: name,
-                round: round,
-                winner: winner,
-                timestamp: new Date() // 🔥 Auto-generates timestamp
-            });
+        <label for="round">Round:</label>
+        <select id="round">
+            <option value="round64">Round of 64</option>
+            <option value="round32">Round of 32</option>
+            <option value="sweet16">Sweet 16</option>
+            <option value="elite8">Elite 8</option>
+            <option value="final4">Final Four</option>
+            <option value="championship">Championship</option>
+        </select>
 
-            document.getElementById("confirmation").innerText = "Picks submitted successfully!";
-        } catch (error) {
-            console.error("Error submitting picks: ", error);
-        }
-    });
-</script>
+        <label for="winner">Winner:</label>
+        <input type="text" id="winner" required>
+
+        <button type="submit">Submit Picks</button>
+    </form>
+
+    <p id="confirmation" style="color:green;"></p>
+
+    <script type="module">
+        import { db, collection, addDoc } from "./firebase.js";
+
+        document.getElementById("picks-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById("name").value;
+            const round = document.getElementById("round").value;
+            const winner = document.getElementById("winner").value;
+
+            try {
+                await addDoc(collection(db, "picks"), {
+                    name: name,
+                    round: round,
+                    winner: winner,
+                    timestamp: new Date()  // Auto-generates timestamp
+                });
+
+                document.getElementById("confirmation").innerText = "Picks submitted successfully!";
+            } catch (error) {
+                console.error("Error submitting picks: ", error);
+            }
+        });
+    </script>
+
+</body>
+</html>
+

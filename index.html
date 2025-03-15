@@ -1,21 +1,24 @@
-document.getElementById("picks-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById("name").value;
-    const round = document.getElementById("round").value;
-    const winner = document.getElementById("winner").value;
+<script type="module">
+    import { db, collection, addDoc } from "./firebase.js";
 
-    try {
-        await addDoc(collection(db, "picks"), {
-            name: name,
-            round: round,
-            winner: winner,
-            timestamp: new Date()  // 🔥 Auto-generates timestamp
-        });
+    document.getElementById("picks-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const name = document.getElementById("name").value;
+        const round = document.getElementById("round").value;
+        const winner = document.getElementById("winner").value;
 
-        document.getElementById("confirmation").innerText = "Picks submitted successfully!";
-    } catch (error) {
-        console.error("Error submitting picks: ", error);
-    }
-});
+        try {
+            await addDoc(collection(db, "picks"), {
+                name: name,
+                round: round,
+                winner: winner,
+                timestamp: new Date() // 🔥 Auto-generates timestamp
+            });
 
+            document.getElementById("confirmation").innerText = "Picks submitted successfully!";
+        } catch (error) {
+            console.error("Error submitting picks: ", error);
+        }
+    });
+</script>

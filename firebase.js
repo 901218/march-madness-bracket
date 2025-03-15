@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    apiKey: "AIzaSyALI9P3VSOuUmjlXo5VKBdSARQAH_6umNg",
     authDomain: "march-madness-bracket-b24db.firebaseapp.com",
     projectId: "march-madness-bracket-b24db",
     storageBucket: "march-madness-bracket-b24db.appspot.com",

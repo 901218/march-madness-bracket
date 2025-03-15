@@ -3,12 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard</title>
+    <title>March Madness Leaderboard</title>
+    <style>
+        /* Cyclones Theme */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #C8102E; /* Cardinal Red */
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            background-color: #F1BE48; /* Gold */
+            color: #C8102E; /* Red */
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            color: #C8102E;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #C8102E;
+        }
+
+        th {
+            background-color: #F1BE48; /* Gold */
+            color: #C8102E; /* Cardinal Red */
+            font-size: 1.2em;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8E1A6; /* Light Gold */
+        }
+
+        tr:hover {
+            background-color: #F1BE48; /* Gold */
+            color: #C8102E; /* Cardinal Red */
+            font-weight: bold;
+        }
+
+        /* Add some styling for responsiveness */
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
     <h2>March Madness Leaderboard</h2>
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>Name</th>
@@ -29,23 +90,36 @@
             const querySnapshot = await getDocs(collection(db, "picks"));
             const tbody = document.getElementById("leaderboard-body");
 
+            // Convert round codes to readable names
+            const roundNames = {
+                "round64": "Round of 64",
+                "round32": "Round of 32",
+                "sweet16": "Sweet 16",
+                "elite8": "Elite 8",
+                "final4": "Final Four",
+                "championship": "Championship"
+            };
+
+            // Loop through Firestore data and add rows to the table
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
                     <td>${data.name}</td>
-                    <td>${data.round}</td>
+                    <td>${roundNames[data.round] || data.round}</td>
                     <td>${data.winner}</td>
-                    <td>${new Date(data.timestamp.seconds * 1000).toLocaleString()}</td>
+                    <td>${data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "N/A"}</td>
                 `;
 
                 tbody.appendChild(row);
             });
         }
 
+        // Load leaderboard data on page load
         loadLeaderboard();
     </script>
 
 </body>
 </html>
+

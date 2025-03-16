@@ -83,13 +83,16 @@
         </tbody>
     </table>
 
- <script type="module">
+<script type="module">
     import { db, collection, getDocs } from "./firebase.js";
 
     async function loadLeaderboard() {
         const picksSnapshot = await getDocs(collection(db, "picks"));
         const resultsSnapshot = await getDocs(collection(db, "results"));
         const tbody = document.getElementById("leaderboard-body");
+
+        // Clear table before updating
+        tbody.innerHTML = "";
 
         // Store actual game results
         let results = {};
@@ -116,21 +119,19 @@
             const player = data.name;
             const round = data.round;
             const pickedWinner = data.winner;
-            const game = data.game || "Game 1"; // Default to "Game 1" if not specified
+            const game = data.game || "Game 1"; 
             const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "N/A";
 
             if (!leaderboard[player]) {
                 leaderboard[player] = { name: player, score: 0, picks: [] };
             }
 
-            // Check if the pick matches the real result
             let points = 0;
             if (results[round] && results[round][game] === pickedWinner) {
                 points = scoring[round] || 0;
                 leaderboard[player].score += points;
             }
 
-            // Store the pick information
             leaderboard[player].picks.push({
                 round: round,
                 winner: pickedWinner,
@@ -139,7 +140,6 @@
             });
         });
 
-        // Convert leaderboard object into sorted array
         let sortedLeaderboard = Object.values(leaderboard).sort((a, b) => b.score - a.score);
 
         sortedLeaderboard.forEach((entry) => {
@@ -159,8 +159,11 @@
         });
     }
 
+    // Load leaderboard every 60 seconds
     loadLeaderboard();
+    setInterval(loadLeaderboard, 60000);
 </script>
+
 
 
 

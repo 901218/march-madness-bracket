@@ -120,49 +120,64 @@
             const round = data.round;
             const pickedWinner = data.winner;
             const game = data.game || "Game 1"; 
-            const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "N/A";
+            const timestamp = data.timestamp ? data.timestamp.seconds : 9999999999; // Default to a large value if missing
 
             if (!leaderboard[player]) {
-                leaderboard[player] = { name: player, score: 0, picks: [] };
+                leaderboard[player] = {
+                    name: player,
+                    score: 0,
+                    correctPicks: 0,
+                    roundBreakdown: { "round64": 0, "round32": 0, "sweet16": 0, "elite8": 0, "final4": 0, "championship": 0 },
+                    earliestPick: timestamp
+                };
             }
 
             let points = 0;
             if (results[round] && results[round][game] === pickedWinner) {
                 points = scoring[round] || 0;
                 leaderboard[player].score += points;
+                leaderboard[player].correctPicks += 1;
+                leaderboard[player].roundBreakdown[round] += 1;
             }
 
-            leaderboard[player].picks.push({
-                round: round,
-                winner: pickedWinner,
-                timestamp: timestamp,
-                points: points
-            });
+            leaderboard[player].earliestPick = Math.min(leaderboard[player].earliestPick, timestamp);
         });
 
-        let sortedLeaderboard = Object.values(leaderboard).sort((a, b) => b.score - a.score);
+        // Convert leaderboard object into an array
+        let sortedLeaderboard = Object.values(leaderboard).sort((a, b) => {
+            // 1️⃣ First, sort by total score (higher is better)
+            if (b.score !== a.score) return b.score - a.score;
 
+            // 2️⃣ Next, sort by most correct picks in later rounds
+            const rounds = ["championship", "final4", "elite8", "sweet16", "round32", "round64"];
+            for (let round of rounds) {
+                if (b.roundBreakdown[round] !== a.roundBreakdown[round]) {
+                    return b.roundBreakdown[round] - a.roundBreakdown[round];
+                }
+            }
+
+            // 3️⃣ Finally, sort by earliest pick submission (lower timestamp wins)
+            return a.earliestPick - b.earliestPick;
+        });
+
+        // Display the leaderboard
         sortedLeaderboard.forEach((entry) => {
-            entry.picks.forEach((pick) => {
-                const row = document.createElement("tr");
-
-                row.innerHTML = `
-                    <td>${entry.name}</td>
-                    <td>${pick.round}</td>
-                    <td>${pick.winner}</td>
-                    <td>${pick.timestamp}</td>
-                    <td>${pick.points} pts</td>
-                `;
-
-                tbody.appendChild(row);
-            });
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${entry.name}</td>
+                <td>${entry.score} pts</td>
+                <td>${entry.correctPicks} correct</td>
+                <td>${new Date(entry.earliestPick * 1000).toLocaleString()}</td>
+            `;
+            tbody.appendChild(row);
         });
     }
 
-    // Load leaderboard every 60 seconds
+    // Auto-refresh leaderboard every 60 seconds
     loadLeaderboard();
     setInterval(loadLeaderboard, 60000);
 </script>
+
 
 
 

@@ -83,7 +83,7 @@
         </tbody>
     </table>
 
-    <script type="module">
+ <script type="module">
     import { db, collection, getDocs } from "./firebase.js";
 
     async function loadLeaderboard() {
@@ -117,34 +117,51 @@
             const round = data.round;
             const pickedWinner = data.winner;
             const game = data.game || "Game 1"; // Default to "Game 1" if not specified
+            const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString() : "N/A";
 
             if (!leaderboard[player]) {
-                leaderboard[player] = { name: player, score: 0 };
+                leaderboard[player] = { name: player, score: 0, picks: [] };
             }
 
             // Check if the pick matches the real result
+            let points = 0;
             if (results[round] && results[round][game] === pickedWinner) {
-                leaderboard[player].score += scoring[round] || 0;
+                points = scoring[round] || 0;
+                leaderboard[player].score += points;
             }
+
+            // Store the pick information
+            leaderboard[player].picks.push({
+                round: round,
+                winner: pickedWinner,
+                timestamp: timestamp,
+                points: points
+            });
         });
 
         // Convert leaderboard object into sorted array
         let sortedLeaderboard = Object.values(leaderboard).sort((a, b) => b.score - a.score);
 
         sortedLeaderboard.forEach((entry) => {
-            const row = document.createElement("tr");
+            entry.picks.forEach((pick) => {
+                const row = document.createElement("tr");
 
-            row.innerHTML = `
-                <td>${entry.name}</td>
-                <td>${entry.score} pts</td>
-            `;
+                row.innerHTML = `
+                    <td>${entry.name}</td>
+                    <td>${pick.round}</td>
+                    <td>${pick.winner}</td>
+                    <td>${pick.timestamp}</td>
+                    <td>${pick.points} pts</td>
+                `;
 
-            tbody.appendChild(row);
+                tbody.appendChild(row);
+            });
         });
     }
 
     loadLeaderboard();
 </script>
+
 
 
 </body>

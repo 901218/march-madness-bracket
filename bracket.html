@@ -21,45 +21,32 @@
 
     <p id="confirmation"></p>
 
-    <script type="module">
-        import { db, collection, addDoc, getDocs } from "./firebase.js";
+   <script type="module">
+    import { db, collection, getDocs } from "./firebase.js";
 
-        async function loadMatchups() {
-            const querySnapshot = await getDocs(collection(db, "bracket"));
-            const matchupsDiv = document.getElementById("matchups");
+    async function loadMatchups() {
+        const querySnapshot = await getDocs(collection(db, "bracket"));
+        const matchupsDiv = document.getElementById("matchups");
 
-            querySnapshot.forEach((doc) => {
-                const game = doc.data();
-                const gameDiv = document.createElement("div");
+        querySnapshot.forEach((doc) => {
+            const game = doc.data();
+            const gameDiv = document.createElement("div");
 
-                gameDiv.innerHTML = `
-                    <label>${game.team1} (${game.seed1}) vs. ${game.team2} (${game.seed2})</label><br>
-                    <input type="radio" name="${game.id}" value="${game.team1}" required> ${game.team1}
-                    <input type="radio" name="${game.id}" value="${game.team2}" required> ${game.team2}
-                    <br><br>
-                `;
+            gameDiv.innerHTML = `
+                <label>
+                    ${game.team1} (${game.seed1}) vs. ${game.team2} (${game.seed2})
+                </label><br>
+                <input type="radio" name="${game.game_id}" value="${game.team1}" required> ${game.team1}
+                <input type="radio" name="${game.game_id}" value="${game.team2}" required> ${game.team2}
+                <br><br>
+            `;
 
-                matchupsDiv.appendChild(gameDiv);
-            });
-        }
+            matchupsDiv.appendChild(gameDiv);
+        });
+    }
 
-        async function submitBracket(e) {
-            e.preventDefault();
-            const name = document.getElementById("name").value;
-            const picks = {};
-            const matchups = document.querySelectorAll("#matchups input:checked");
-
-            matchups.forEach((input) => {
-                picks[input.name] = input.value;
-            });
-
-            await addDoc(collection(db, "picks"), { name, picks, timestamp: new Date() });
-            document.getElementById("confirmation").innerText = "Bracket submitted successfully!";
-        }
-
-        document.getElementById("bracket-form").addEventListener("submit", submitBracket);
-        loadMatchups();
-    </script>
+    loadMatchups();
+</script>
 
 </body>
 </html>
